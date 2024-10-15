@@ -1,1 +1,1 @@
-# SamReadingBioinformatics
+# Sam Reading in Bioinformatics
