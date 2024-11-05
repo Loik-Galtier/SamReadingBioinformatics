@@ -28,20 +28,21 @@ def flagBits(flag) : #Used same def of the template because is good and if we ha
         add = 12 - len(flagB) # We compute the difference between the maximal flag size (12) and the length of the binary flag.
         for t in range(add):
             flagB.insert(0,'0') # We insert 0 to complete until the maximal flag size.
+    print(flagB)
     return flagB
 
 def CountDifferentFlag(SamFile):
-    Occurence = {}
+    Occurence = {} #dico
     with open(name, "rt") as SamFile:
         for line in SamFile:
-            #check si la ligne commence n'a pas @ via regex
-            if not re.search(r"^@", line):
+            if not re.search(r"^@", line): #if is not a line commentary
                 Field_line = line.split("\t")  # separate for every collone
                 if (Field_line[1] in Occurence):
                     Occurence[Field_line[1]] += 1
                 else:
                     Occurence[Field_line[1]] = 1
-                print(Occurence)
+        print(Occurence)
+
 
 
 
