@@ -2,6 +2,7 @@
 #-*- coding : utf-8 -*-
 import os
 import re
+import csv
 import sys
 
 
@@ -17,55 +18,59 @@ def findFile ():
         else:
             print("Don't have a file") # Ask again for a file.
 
-def chooseParameter():
-    print("Choose a option to add for all next operation:")
-    print("0 : no special parameter")
-    print("1 : Only mapped")
-    print("2 : no unmapped")
-    print("3 : Max quality of X")
-    parameter = input("?")
-    return parameter
 
-def flagBits(flag) : #Used same def of the template because is good and if we have to keep the table of 2¹⁶ for analyzing, we gonna do the same part (of convert in bits and set to the 12 line of the table) #look after for change ?
+def sam_reading(sam_file_path):
+    # Ouvrir le fichier SAM
+    with open(sam_file_path, "r") as sam_file:
+        # Initialiser le lecteur CSV (camma seperated values) avec le délimiteur de tabulation car le fichier SAM est séparé par des tabulations
+        sam_reader = csv.reader(sam_file, delimiter='\t')
 
-    flagB = bin(int(flag)) # Transform the integer into a binary.
-    flagB = flagB[2:] # Remove '0b' Example: '0b1001101' > '1001101'
-    flagB = list(flagB)
-    if len(flagB) < 12: # Size adjustement to 12 (maximal flag size)
-        add = 12 - len(flagB) # We compute the difference between the maximal flag size (12) and the length of the binary flag.
-        for t in range(add):
-            flagB.insert(0,'0') # We insert 0 to complete until the maximal flag size.
+        # Parcourir chaque ligne du fichier SAM
+        flags = []
+        quals = []
+        coverage = {}
+        # Pour chaque ligne de mon fichier SAM
+        for row in sam_reader:
+            # Ignorer les lignes d'en-tête qui commencent par '@'
+            if row[0].startswith("@"):
+                continue
 
-    return flagB
+            # Accéder aux informations de chaque colonne
+            qname = row[0]  # Nom du read
+            flag = int(row[1])  # Flag
+            flags.append(flag)  # rajouter le flag de chaque ligne dans la liste
+            rname = row[2]  # Nom de la séquence de référence
+            start_pos = int(row[3])  # Position de début de l'alignement
+            mapq = int(row[4])  # Qualité de l'alignementt
+            cigar = row[5]  # Chaîne CIGAR
+            rnext = row[6]  # Référence du read suivant dans le cas des paires
+            pnext = int(row[7])  # Position du read suivant dans le cas des paires
+            tlen = int(row[8])  # Longueur du fragment pour les paires
+            seq = row[9]  # Séquence de l'ADN
+            seq_length = len(seq)
+            if len(row) > 10: #voir si existe collone 10
+                qual = row[10]  # Qualité de chaque base dans la séquence
+                quals.append(qual)  # rajouter la qual de chaque ligne dans la liste
 
-def CountReadFlag():
-    Occurence = {} #dico
-    with open(name, "rt") as SamFile:
-        for line in SamFile:
-            if not re.search(r"^@", line): #if is not a line commentary
-                Field_line = line.split("\t")  # separate for every collone
-                if (Field_line[1] in Occurence):
-                    Occurence[Field_line[1]] += 1
+            # pour la question 3 localisation des reads sur la séquence
+
+            for pos in range(start_pos, start_pos + seq_length):
+                if pos in coverage:
+                    coverage[pos] += 1
                 else:
-                    Occurence[Field_line[1]] = 1
-        print(Occurence)
+                    coverage[pos] = 1
 
-def WhoUnMapped():
-    Count = 0
-    with open(name, "rt") as SamFile:
-        for line in SamFile:
-            if not re.search(r"^@", line): #if is not a line commentary
-                Field_line = line.split("\t")  # separate for every collone
-                flag = flagBits(Field_line[1])  # take the 2nd (0 1) field and pu it in binnary
+            # Afficher les informations du read
+            print(f"Qual : {qual}")
+    return flags, quals, coverage
 
-                if int(flag[-3]) == 1:  # If the 3rd bits (from the last) is = to 1, so the flag is unmapped
-                    Count += 1  # add one Unmapped count
 
-        return Count
+
+
+
 
 ### Start ###
-name = findFile()
-parameter = chooseParameter()
-print(name)
-CountReadFlag()
-print(WhoUnMapped())
+sam_file_path = findFile()
+flag_size = 12
+# J'appelle la fonction sam_reading qui prend en paramètre le chemin et qui me retourne les flags et les quals
+flags, quals, coverage = sam_reading(sam_file_path)
