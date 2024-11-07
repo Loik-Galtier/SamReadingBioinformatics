@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="d1462c3e-622b-44ef-8ece-5f10a6e23609" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SamMapScript.py" beforeDir="false" afterPath="$PROJECT_DIR$/SamMapScript.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/projet_noteb.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/projet_noteb.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +71,7 @@
       <workItem from="1730795258902" duration="137000" />
       <workItem from="1730796409147" duration="5458000" />
       <workItem from="1730807093981" duration="5258000" />
-      <workItem from="1730972282421" duration="1709000" />
+      <workItem from="1730972282421" duration="5488000" />
     </task>
     <servers />
   </component>
@@ -81,6 +79,6 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SamReadingBioinformatics$SamMapScript.coverage" NAME="SamMapScript Coverage Results" MODIFIED="1730973881048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SamReadingBioinformatics$SamMapScript.coverage" NAME="SamMapScript Coverage Results" MODIFIED="1730977745441" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
