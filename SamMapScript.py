@@ -34,6 +34,18 @@ def sam_reading(sam_file_path):
         for row in sam_reader:
             # Ignorer les lignes d'en-tête qui commencent par '@'
             if row[0].startswith("@"):
+                if row[0].startswith("@PG"):
+                    idname = re.match(r"ID:([^\t]+)", row[1])
+                    if idname :
+                        print("Un programe a était utilisé, sont ID unique est : " + idname.group(1) + "\n")
+                elif row[0].startswith("@SQ"):
+                    sN = re.match(r"SN:([^\t]+)", row[1])
+                    lN = re.match(r"LN:([^\t]+)", row[2])
+                    if sN:
+                        print("Une séquence de référence a était utilisé, sont nom est : " + sN.group(1))
+                    if lN:
+                        print("et a une longueur de : " + lN.group(1) + " bases \n")
+
                 continue
 
             # Accéder aux informations de chaque colonne
@@ -89,7 +101,7 @@ def number_of_mapped_reads (flag_size, binary_flags):
         if (flag[-3] == "0"):
             # Rajouter 1 pour compter le nombre de read
             nbr = nbr + 1
-    print ("J'ai", nbr, "read mappés")
+    print (nbr, "read mappés")
 
 
 def number_of_unmapped_reads(flag_size, binary_flags):
@@ -101,7 +113,7 @@ def number_of_unmapped_reads(flag_size, binary_flags):
         if flag[-3] == "1":
         # Rajouter 1 pour compter le nombre de read
             nbr = nbr + 1
-    print ("J'ai", nbr, "read non mappés")
+    print (nbr, "read non mappés")
 
 def number_of_semimapped_reads(flag_size, binary_flags, cigars):
     nbr = 0
@@ -113,7 +125,7 @@ def number_of_semimapped_reads(flag_size, binary_flags, cigars):
             if cigars[i] != "100M": #si 100M, alors il n'y as pas de problème
                 # Rajouter 1 pour compter le nombre de read
                 nbr = nbr + 1
-    print ("J'ai", nbr, "read semi mappés")
+    print (nbr, "read semi mappés")
 
 
 ### Start ###

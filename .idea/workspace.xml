@@ -71,7 +71,7 @@
       <workItem from="1730795258902" duration="137000" />
       <workItem from="1730796409147" duration="5458000" />
       <workItem from="1730807093981" duration="5258000" />
-      <workItem from="1730972282421" duration="5488000" />
+      <workItem from="1730972282421" duration="8338000" />
     </task>
     <servers />
   </component>
@@ -79,6 +79,6 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SamReadingBioinformatics$SamMapScript.coverage" NAME="SamMapScript Coverage Results" MODIFIED="1730977745441" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SamReadingBioinformatics$SamMapScript.coverage" NAME="SamMapScript Coverage Results" MODIFIED="1730989500466" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
