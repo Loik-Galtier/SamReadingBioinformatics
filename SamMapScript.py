@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 #-*- coding : utf-8 -*-
+
+__authors__ = ("Loik Galtier", "aicha el jai")
+
+
 import os
 import re
 import csv
@@ -8,16 +12,49 @@ import sys
 #### Setting the file####
 #check the selected file exist and have the .sam
 def findFile ():
-    noFileFound = True
-    while noFileFound :
-        name = input("Path and Name of the file : ?") #Ask the path
-        if os.path.exists(name) and re.search(r".sam", name): # if the path exist AND the .sam exist
-            noFileFound = False #quit the while
-            print("There is a file") # continue -> Ask what question to respond (1, 2, 3, 4)
-            return name #return the file open
-        else:
-            print("Don't have a file") # Ask again for a file.
+    if len(sys.argv) == 1 :
+        noFileFound = True
+        while noFileFound :
+            name = input("Quel est le chemin d'accés au fichier sam : ?") #Ask the path
+            if os.path.exists(name) and re.search(r".sam", name): # if the path exist AND the .sam exist
+                noFileFound = False #quit the while
+                print("Il y as un fichier sam") # continue -> Ask what question to respond (1, 2, 3, 4)
+                return name #return the file open
+            else:
+                print("Il n'y as pas de fichier sam, try again \n") # Ask again for a file.
+    else :
+        if os.path.exists(sys.argv[1]) and re.search(r".sam", sys.argv[1]):  # if the path exist AND the .sam exist
+            print("Il y as un fichier sam")  # continue -> Ask what question to respond (1, 2, 3, 4)
+            return sys.argv[1]  # return the file open
+        else :
+            print("Erreur : Aucun fichier .sam n'a était trouvé \n")
+            sys.exit()
 
+def askQuality():
+    if len(sys.argv) < 3 :
+        noAnswer = True
+        while noAnswer:
+            needQualityMin = input("Voulez vous appliqué un filtre de qualité minimal pour la suite du traitement : (Y/N)").upper()  # Ask the path
+            if needQualityMin == "Y":
+                QualityMin = input("Quel valeur minimal voulais vous appliquer : [0-255]")
+                if QualityMin.isdigit():
+                    print("Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + QualityMin + "\n")
+                    noAnswer = False
+                    return QualityMin
+                else :
+                    print("Cela n'est pas une valeur correcte \n")
+            elif needQualityMin == "N":
+                noAnswer = False
+                print("\n")
+                return 0
+            else :
+                print("Valeur non correcte \n")
+    elif sys.argv[2].isdigit():
+        print("Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + sys.argv[2] + "\n")
+        return sys.argv[2]
+    else:
+        print("Erreur : Cela n'est pas une valeur correcte pour la qualité")
+        sys.exit()
 
 def sam_reading(sam_file_path):
     # Ouvrir le fichier SAM
@@ -34,10 +71,20 @@ def sam_reading(sam_file_path):
         for row in sam_reader:
             # Ignorer les lignes d'en-tête qui commencent par '@'
             if row[0].startswith("@"):
-                if row[0].startswith("@PG"):
+                if row[0].startswith("@HD"):
+                    vN = re.match(r"VN:([^\t]+)", row[1])
+                    sO = re.match(r"SO:([^\t]+)", row[2])
+                    if vN :
+                        print("la version du fichier est : " + vN.group(1))
+                    if sO :
+                        print("l'ordre de trie est : " + sO.group(1))
+                    print("\n")
+
+                elif row[0].startswith("@PG"):
                     idname = re.match(r"ID:([^\t]+)", row[1])
                     if idname :
                         print("Un programe a était utilisé, sont ID unique est : " + idname.group(1) + "\n")
+
                 elif row[0].startswith("@SQ"):
                     sN = re.match(r"SN:([^\t]+)", row[1])
                     lN = re.match(r"LN:([^\t]+)", row[2])
@@ -45,6 +92,11 @@ def sam_reading(sam_file_path):
                         print("Une séquence de référence a était utilisé, sont nom est : " + sN.group(1))
                     if lN:
                         print("et a une longueur de : " + lN.group(1) + " bases \n")
+
+                elif row[0].startswith("@RG"):
+                    idgroup = re.match(r"ID:([^\t]+)", row[1])
+                    if idgroup :
+                        print("Un groupe de lecture a était formé, sont ID unique est : " + idgroup.group(1) + "\n")
 
                 continue
 
@@ -129,7 +181,18 @@ def number_of_semimapped_reads(flag_size, binary_flags, cigars):
 
 
 ### Start ###
+if len(sys.argv) == 1 :
+    print("Vous n'avez pas rentré d'argument, vous pouvez répondre au question suivante ou utilisez -h pour plus de détails ou automatiser le procéssus \n")
+
+elif "-h" in sys.argv or "--help" in sys.argv :
+        print("Pour faire fonctionner ce script :")
+        print("Soit avec aucun argument : des questions étapes par étapes vous seront posé")
+        print("Soit avec un argument : le lien vers votre fichier .sam, l'analyse se lancera sans qualité minimal")
+        print("Soit avec deux arguments : le lien vers vore fichier .sam, et une valeur numérique de qualité minimal a respecté")
+        sys.exit()
+
 sam_file_path = findFile()
+QualityMin = askQuality()
 # J'appelle la fonction sam_reading qui prend en paramètre le chemin et qui me retourne les flags et les quals
 flags, quals, coverage, cigars = sam_reading(sam_file_path)
 
