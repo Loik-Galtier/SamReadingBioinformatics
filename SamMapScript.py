@@ -9,7 +9,7 @@ import re
 import csv
 import sys
 
-#### Setting the file####
+#### Setting the file ####
 #check the selected file exist and have the .sam
 def findFile ():
     if len(sys.argv) == 1 :
@@ -30,6 +30,7 @@ def findFile ():
             print("Erreur : Aucun fichier .sam n'a était trouvé \n")
             sys.exit()
 
+#### Define quality ####
 def askQuality():
     if len(sys.argv) < 3 :
         noAnswer = True
@@ -56,48 +57,59 @@ def askQuality():
         print("Erreur : Cela n'est pas une valeur correcte pour la qualité")
         sys.exit()
 
+#### Extract part and use header ####
 def sam_reading(sam_file_path):
     # Ouvrir le fichier SAM
     with open(sam_file_path, "r") as sam_file:
-        # Initialiser le lecteur CSV (camma seperated values) avec le délimiteur de tabulation car le fichier SAM est séparé par des tabulations
-        sam_reader = csv.reader(sam_file, delimiter='\t')
 
         # Parcourir chaque ligne du fichier SAM
+        sequenceNames = []
         flags = []
+        rnames = []
         quals = []
         coverage = {}
         cigars = []
-        # Pour chaque ligne de mon fichier SAM
-        for row in sam_reader:
-            # Ignorer les lignes d'en-tête qui commencent par '@'
-            if row[0].startswith("@"):
-                if row[0].startswith("@HD"):
-                    vN = re.match(r"VN:([^\t]+)", row[1])
-                    sO = re.match(r"SO:([^\t]+)", row[2])
+        numberOfReadTotal = 0
+
+        #Extraire les informations du header
+        for line in sam_file:
+            if line.startswith("@"):
+                if line.startswith("@HD"):
+                    vN = re.search(r"VN:([^\t]+)", line)
+                    sO = re.search(r"SO:([^\t]+)", line)
                     if vN :
                         print("la version du fichier est : " + vN.group(1))
                     if sO :
                         print("l'ordre de trie est : " + sO.group(1))
                     print("\n")
 
-                elif row[0].startswith("@PG"):
-                    idname = re.match(r"ID:([^\t]+)", row[1])
+                elif line.startswith("@PG"):
+                    idname = re.search(r"ID:([^\t]+)", line)
                     if idname :
                         print("Un programe a était utilisé, sont ID unique est : " + idname.group(1) + "\n")
 
-                elif row[0].startswith("@SQ"):
-                    sN = re.match(r"SN:([^\t]+)", row[1])
-                    lN = re.match(r"LN:([^\t]+)", row[2])
+                elif line.startswith("@SQ"):
+                    sN = re.search(r"SN:([^\t]+)", line)
+                    lN = re.search(r"LN:([^\t]+)", line)
                     if sN:
                         print("Une séquence de référence a était utilisé, sont nom est : " + sN.group(1))
+                        sequenceNames.append(sN.group(1))
                     if lN:
                         print("et a une longueur de : " + lN.group(1) + " bases \n")
 
-                elif row[0].startswith("@RG"):
-                    idgroup = re.match(r"ID:([^\t]+)", row[1])
+                elif line.startswith("@RG"):
+                    idgroup = re.search(r"ID:([^\t]+)", line)
                     if idgroup :
                         print("Un groupe de lecture a était formé, sont ID unique est : " + idgroup.group(1) + "\n")
+        sam_file.seek(0) #pour arreter la boucle
 
+        # Initialiser le lecteur CSV (camma seperated values) avec le délimiteur de tabulation car le fichier SAM est séparé par des tabulations
+        sam_reader = csv.reader(sam_file, delimiter='\t')
+        # Pour chaque ligne de mon fichier SAM
+        for row in sam_reader:
+            # Ignorer les lignes d'en-tête qui commencent par '@'
+
+            if row[0].startswith("@"):
                 continue
 
             # Accéder aux informations de chaque colonne
@@ -105,6 +117,7 @@ def sam_reading(sam_file_path):
             flag = int(row[1])  # Flag
             flags.append(flag)  # rajouter le flag de chaque ligne dans la liste
             rname = row[2]  # Nom de la séquence de référence
+            rnames.append(rname)
             start_pos = int(row[3])  # Position de début de l'alignement
             mapq = int(row[4])  # Qualité de l'alignementt
             cigar = row[5]  # Chaîne CIGAR
@@ -126,11 +139,12 @@ def sam_reading(sam_file_path):
                 else:
                     coverage[pos] = 1
 
+            numberOfReadTotal += 1
             # Afficher les informations du read
             # print(f"QNAME: {qname}, FLAG: {flag}, RNAME: {rname}, POS: {pos}, CIGAR: {cigar}, SEQ: {seq}")
-    return flags, quals, coverage, cigars
+    return sequenceNames, flags, rnames, quals, coverage, cigars, numberOfReadTotal
 
-
+#### Convert to binary ####
 # Je définie une fonction nommée flags_to_binary pour convertir le flag en binaire parceque le flag contient les infos en bit
 def flags_to_binary(flag_size, flags):
     # Boucle qui va parcourir de 0 à la taille des flags-1
@@ -145,15 +159,17 @@ def flags_to_binary(flag_size, flags):
 #### Question 1 ####
 # Je définie une fonction nommée number_of_mapped_reads qui prend en paramètre la taille des flags et les flags en binaire
 def number_of_mapped_reads (flag_size, binary_flags):
-    nbr = 0
-    for i in range(len(binary_flags)):
-        # Mettre le flag en binaire de la ligne en question (i) dans la variable flag
-        flag=binary_flags[i]
-        # le bit 3 code pour l'info "read mappé ou pas", donc on soustrait le chiffre 3 de la taille du flag. Si "0" = mappé, sans prendre en compte si il est mal mappé
-        if (flag[-3] == "0"):
-            # Rajouter 1 pour compter le nombre de read
-            nbr = nbr + 1
-    print (nbr, "read mappés")
+    for sqname in sequenceRefName :
+        nbr = 0
+        #Boucle qui parcourss de 0 à la quantité de read
+        for i in range(len(binary_flags)):
+            # Mettre le flag en binaire de la ligne en question (i) dans la variable flag
+            flag=binary_flags[i]
+            # le bit 3 code pour l'info "read mappé ou pas", donc on soustrait le chiffre 3 de la taille du flag. Si "0" = mappé, sans prendre en compte si il est mal mappé
+            if (flag[-3] == "0"):
+                # Rajouter 1 pour compter le nombre de read
+                nbr = nbr + 1
+        print (nbr, "read mappés sur ", sqname)
 
 
 def number_of_unmapped_reads(flag_size, binary_flags):
@@ -180,7 +196,11 @@ def number_of_semimapped_reads(flag_size, binary_flags, cigars):
     print (nbr, "read semi mappés")
 
 
-### Start ###
+
+
+
+
+#### Start ####
 if len(sys.argv) == 1 :
     print("Vous n'avez pas rentré d'argument, vous pouvez répondre au question suivante ou utilisez -h pour plus de détails ou automatiser le procéssus \n")
 
@@ -194,7 +214,7 @@ elif "-h" in sys.argv or "--help" in sys.argv :
 sam_file_path = findFile()
 QualityMin = askQuality()
 # J'appelle la fonction sam_reading qui prend en paramètre le chemin et qui me retourne les flags et les quals
-flags, quals, coverage, cigars = sam_reading(sam_file_path)
+sequenceRefName, flags, rname, quals, coverage, cigars, totalNumberOfRead = sam_reading(sam_file_path)
 
 flag_size = 12
 binary_flags = flags_to_binary(flag_size ,flags) #Conversion des flags en binaire sur 12 bits
