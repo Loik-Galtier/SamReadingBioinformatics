@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 # -*- coding : utf-8 -*-
 
-__authors__ = ("Loik Galtier", "aicha el jai")
+#licence auteur et version
+
+__authors__ = ("Loik Galtier")
 
 import os
 import re
@@ -34,7 +36,7 @@ def findFile():
 
 #### Define quality ####
 def askQuality():
-	if len(sys.argv) < 3:
+	if len(sys.argv) == 1:
 		noAnswer = True
 		while noAnswer:
 			needQualityMin = input(
@@ -45,7 +47,7 @@ def askQuality():
 					print(
 						"Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + QualityMin + "\n")
 					noAnswer = False
-					return QualityMin
+					return int(QualityMin)
 				else:
 					print("Cela n'est pas une valeur correcte \n")
 			elif needQualityMin == "N":
@@ -54,13 +56,22 @@ def askQuality():
 				return 0
 			else:
 				print("Valeur non correcte \n")
-	elif sys.argv[2].isdigit():
-		print("Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + sys.argv[
-			2] + "\n")
-		return sys.argv[2]
+				
+	elif len(sys.argv) >= 3 :
+		if sys.argv[2].isdigit():
+			print("Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + sys.argv[
+				2] + "\n")
+			return int(sys.argv[2])
+		elif sys.argv[2].isalpha():
+			print("Erreur : Cela n'est pas une valeur correcte pour la qualité")
+			sys.exit()
+		else:
+			return 0
+	
 	else:
-		print("Erreur : Cela n'est pas une valeur correcte pour la qualité")
-		sys.exit()
+		return 0
+
+
 
 
 ######## Extract part and use header ########
@@ -70,14 +81,16 @@ def sam_reading(sam_file_path):
 		
 		# Parcourir chaque ligne du fichier SAM
 		sequenceNames = []
+		
 		flags = []
 		rnames = []
-		quals = []
-		coverage = {}
+		mapqs = []
 		cigars = []
+		
 		numberOfReadTotal = 0
 		
 		# affichage info header
+		hdTable = {}
 		sqTable = {}
 		pgTable = {}
 		
@@ -89,25 +102,25 @@ def sam_reading(sam_file_path):
 					vN = re.search(r"VN:([^\t|\n]+)", line)
 					sO = re.search(r"SO:([^\t|\n]+)", line)
 					if vN:
-						print("la version du fichier est : " + vN.group(1))
-					if sO:
-						print("l'ordre de trie est : " + sO.group(1))
-					print("\n")
+						hdTable[vN.group(1)] = ""
+						if sO:
+							hdTable[vN.group(1)]= [sO.group(1)]
 				
 				elif line.startswith("@PG"):
 					idnamepg = re.search(r"ID:([^\t|\n]+)", line)
 					versionpg = re.search(r"VN:([^\t|\n]+)", line)
 					if idnamepg:
 						pgTable[idnamepg.group(1)] = ""
-					if versionpg:
-						pgTable[idnamepg.group(1)] = versionpg.group(1)
-					print("\n")
+						if versionpg:
+							pgTable[idnamepg.group(1)] = versionpg.group(1)
+						
 				elif line.startswith("@SQ"):
 					sN = re.search(r"SN:([^\t|\n]+)", line)
 					lN = re.search(r"LN:([^\t|\n]+)", line)
 					if sN and lN:
 						sequenceNames.append(sN.group(1))
 						sqTable[sN.group(1)] = lN.group(1)
+						
 				elif line.startswith("@RG"):
 					idgroup = re.search(r"ID:([^\t|\n]+)", line)
 					if idgroup:
@@ -115,6 +128,12 @@ def sam_reading(sam_file_path):
 		sam_file.seek(0)  # pour arreter la boucle
 		
 		print("_________________ \n Entête :\n")
+		
+		if (hdTable):
+			print("Les données de ce fichier sont :")
+			data = [(f"{cle} |", f"{val} |") for cle, val in hdTable.items()]
+			t_data = pd.DataFrame(data, columns=["Format Version |", "Ordre |"])
+			print(t_data, "\n")
 		
 		if (sqTable):
 			print("Des séquences références en était utilisé :")
@@ -128,57 +147,33 @@ def sam_reading(sam_file_path):
 			data = [(f"{cle} |", f"{val} |") for cle, val in pgTable.items()]
 			t_data = pd.DataFrame(data, columns=["Programme id |", "Version |"])
 			print(t_data, "\n")
-		
 		# Initialiser le lecteur CSV (camma seperated values) avec le délimiteur de tabulation
 		sam_reader = csv.reader(sam_file, delimiter='\t')
 		for row in sam_reader:  # Pour chaque ligne de mon fichier SAM
 			if row[0].startswith("@"):  # Ignorer les lignes d'en-tête qui commencent par '@'
 				continue
-			if (int(row[4]) >= int(QualityMin) and int(
-					row[4]) < 255):  # si la ligne a une qualité supérieur à la qualité demandé et inférieur a 255
+			if (int(row[4]) >= QualityMin and int(row[4]) < 255):  # si la ligne a une qualité supérieur à la qualité demandé et inférieur a 255
 				
 				# Accéder aux informations de chaque colonne
-				
-				qname = row[0]  # Nom du read
-				
 				flag = int(row[1])  # Flag
 				flags.append(flag)  # rajouter le flag de chaque ligne dans la liste
 				
 				rname = row[2]  # Nom de la séquence de référence
 				rnames.append(rname)
 				
-				start_pos = int(row[3])  # Position de début de l'alignement
-				
-				mapq = int(row[4])  # Qualité de l'alignementt
+				mapq = row[4]
+				mapqs.append(mapq)
 				
 				cigar = row[5]  # Chaîne CIGAR
 				cigars.append(cigar)
 				
-				rnext = row[6]  # Référence du read suivant dans le cas des paires
-				
-				pnext = int(row[7])  # Position du read suivant dans le cas des paires
-				tlen = int(row[8])  # Longueur du fragment pour les paires
-				
-				seq = row[9]  # Séquence de l'ADN
-				seq_length = len(seq)
-				
-				if len(row) > 10:  # voir si existe collone 10
-					qual = row[10]  # Qualité de chaque base dans la séquence
-					quals.append(qual)  # rajouter la qual de chaque ligne dans la liste
-				
-				for pos in range(start_pos, start_pos + seq_length):
-					if pos in coverage:
-						coverage[pos] += 1
-					else:
-						coverage[pos] = 1
-				
 				numberOfReadTotal += 1
 		# print(f"QNAME: {qname}, FLAG: {flag}, RNAME: {rname}, POS: {pos}, CIGAR: {cigar}, SEQ: {seq}")
-	return sequenceNames, flags, rnames, quals, coverage, cigars, numberOfReadTotal
+	return sequenceNames, flags, rnames,mapqs , cigars, numberOfReadTotal
 
 
 ######## Convert to binary ########
-# Je définie une fonction nommée flags_to_binary pour convertir le flag en binaire parceque le flag contient les infos en bit
+#fonction flags_to_binary pour convertir le flag en binaire
 def flags_to_binary(flags):
 	for i in range(len(flags)):  # Boucle qui va parcourir de 0 à la taille des flags
 		flags[i] = bin(flags[i])  # Convertir en binaire
@@ -225,28 +220,28 @@ def analysis_of_mapped_reads(binary_flags):
 	# unmapped part
 	for i in range(len(binary_flags)):
 		flag = binary_flags[i]  # Mettre un flag en binaire dans la variable flag
-		if flag[-3] == "1" or rname[i] == "*":  # le bit 3 code pour l'info "read non mappé". Si "1" = non mappé
+		if flag[-3] == "1" or rname[i] == "*" or rname[i] not in sequenceRefName:  # le bit 3 code pour l'info "read non mappé". Si "1" = non mappé
 			nbUnmapped += 1  # Rajouter 1 pour compter le nombre de read
 	
 	print("_________________ \n Alignement :\n")
-	print("Parmis", totalNumberOfRead, "reads, les reads alignés sont :")
+	print("Parmis", totalNumberOfRead, "reads, les reads sont :")
 	
 	if (nbMappedTable):
 		data1 = [(f"{cle} |", f"{val} |", f" {round(val / totalNumberOfRead, 4) * 100} |", f" Mappé |") for cle, val in
 		         nbMappedTable.items()]  #
-		t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |", "Quantité |", " Pourcentage |", " Alligné ?|"])
+		t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |", "Quantité |", " 100% |", " Alligné ?|"])
 		t_data = pd.concat([t_data1], axis=0)
 	
 	if (nbSemmappedTable and nbMappedTable):
 		data2 = [(f"{cle} |", f"{val} |", f" {round(val / totalNumberOfRead, 4) * 100} |", f" Semi-mappé |") for
 		         cle, val in nbSemmappedTable.items()]  #
-		t_data2 = pd.DataFrame(data2, columns=[" Sequence reference |", "Quantité |", " Pourcentage |", f" Alligné ?|"])
+		t_data2 = pd.DataFrame(data2, columns=[" Sequence reference |", "Quantité |", " 100% |", f" Alligné ?|"])
 		t_data = pd.concat([t_data1, t_data2], axis=0)
 	
 	if (nbUnmapped > 0):
 		data3 = [(" Non aligné |", f"{nbUnmapped} |", f" {round(nbUnmapped / totalNumberOfRead, 4) * 100} |",
 		          f" non mappé |")]  #
-		t_data3 = pd.DataFrame(data3, columns=[" Sequence reference |", "Quantité |", " Pourcentage |", f" Alligné ?|"])
+		t_data3 = pd.DataFrame(data3, columns=[" Sequence reference |", "Quantité |", " 100% |", f" Alligné ?|"])
 		if (nbSemmappedTable and nbMappedTable):
 			t_data = pd.concat([t_data1, t_data2, t_data3], axis=0)
 		elif (nbMappedTable):
@@ -260,19 +255,22 @@ def analysis_of_mapped_reads(binary_flags):
 
 #######  ########
 def count_flag_number():
+
+	print("_________________ \n Quantité des flags :\n")
+	
 	flags_dico_description = {
-		"Flags2048": "",
-		"Flags1024": "",
-		"Flags512": "",
-		"Flags256": "",
-		"Flags128": "",
-		"Flags64": "",
-		"Flags32": "",
-		"Flags16": "",
-		"Flags8": "",
-		"Flags4": "",
-		"Flags2": "",
-		"Flags1": ""
+		"Flags2048": "supplementary alignment",
+		"Flags1024": "PCR or optical duplicate",
+		"Flags512": "not passing filters",
+		"Flags256": "secondary alignment",
+		"Flags128": "the last segment in the template",
+		"Flags64": "the first segment in the template",
+		"Flags32": "SEQ of the next segment reverse complemented",
+		"Flags16": "SEQ being reverse complemented",
+		"Flags8": "next segment in the template unmapped",
+		"Flags4": "segment unmapped",
+		"Flags2": "each segment properly aligned",
+		"Flags1": "template having multiple segments sequencing"
 	}
 	
 	flags_dico = {
@@ -291,7 +289,7 @@ def count_flag_number():
 	}
 	
 	flags_index = list(flags_dico.keys())
-	
+	pd.set_option('display.max_colwidth', 40)
 	for i in range(len(binary_flags)):
 		# Mettre un flag en binaire dans la variable flag
 		flag = binary_flags[i]
@@ -302,37 +300,186 @@ def count_flag_number():
 	
 	data1 = [(f"{cle} |", f"{val} |", f" {round(val / totalNumberOfRead, 4) * 100} |") for cle, val in
 	         flags_dico.items()]  #
-	t_data1 = pd.DataFrame(data1, columns=[" Flags |", "Quantité |", " Pourcentage |"])
+	t_data1 = pd.DataFrame(data1, columns=[" Flags |", "Quantité |", " 100% |"])
 	
 	data2 = [(f"{val} |") for cle, val in flags_dico_description.items()]  #
 	t_data2 = pd.DataFrame(data2, columns=[" Description |"])
 	t_data = pd.concat([t_data1, t_data2], axis=1)
 	print(t_data)
 
+### ####
+def pair_Analysis():
+	dico_Pair = {
+		# Pos : Pnext        actuel position : position d'une possible pair
+	    }
+	
+	with open(sam_file_path, "r") as sam_file:
+		sam_reader = csv.reader(sam_file, delimiter='\t')
+		for row in sam_reader:  # Pour chaque ligne de mon fichier SAM
+			if row[0].startswith("@"):  # Ignorer les lignes d'en-tête qui commencent par '@'
+				continue
+			if (int(row[4]) >= QualityMin and int(row[4]) < 255):  # si la ligne a une qualité supérieur à la qualité demandé et inférieur a 255
+				if((row[6] == row[2] and row[6] != "*") or row[6] == "="):
+					dico_Pair[row[3]] = row [7]
+					
+	
+				
+#### ####
+def quality_analysis():
+	
+	
+	qual_dico_sequence={}
+	
+	for sqname in sequenceRefName:
+		qual_dico = {
+			'0':0,
+			'1-30':0,
+			'31-60':0,
+			'61 -':0
+		}
+		for i in range(len(binary_flags)):  # Boucle qui parcours de 0 à la quantité de reads
+			if (rname[i] == sqname):        # verifier si le read est mappé sur la sequence de reference
+				if(mapqs[i].isdigit() and mapqs[i] != '0'):     #verifier si mapQ est bien un chiffre
+					if(int(mapqs[i]) > 0 and int(mapqs[i]) <= 30):
+						qual_dico['1-30'] += 1  # Rajouter 1 pour compter le nombre de read
+					elif(int(mapqs[i]) > 30 and int(mapqs[i]) <= 60):
+						qual_dico['31-60'] += 1  # Rajouter 1 pour compter le nombre de read
+					else:
+						qual_dico['61 -'] += 1  # Rajouter 1 pour compter le nombre de read
+				else:
+					qual_dico['0'] += 1  # Rajouter 1 pour compter le nombre de read
+		
+		qual_dico_sequence[sqname] = qual_dico  # Stock
+		print("\n_________________ \n Tranche de qualité :\n")
+		
+		for upKey, upValue in qual_dico_sequence.items():
+			data1 = [(f"{upKey} |", f"{key} |", f"{val} |", f" {round(val / totalNumberOfRead, 4) * 100} |") for key, val in upValue.items()]
+			t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |"," Qualité |", " Quantité |", " 100% |"])
+			t_data = pd.concat([t_data1], axis=1)
+			print(t_data)
+			
+
+####  #####
+def cigar_analysis():
+	
+
+	print("\n_________________ \n Quantité des cigars :\n")
+	
+	longueur_théorique = 0
+	longueur_constaté = 0
+	
+	cigar_dico_description = {
+		"M": "",
+		"I": "",
+		"D": "",
+		"N": "",
+		"S": "",
+		"H": "",
+		"P": "",
+		"=": "",
+		"X": ""
+	}
+	
+	cigar_dico = {
+		"M" : 0,
+		"I" : 0,
+		"D" : 0,
+		"N" : 0,
+		"S" : 0,
+		"H" : 0,
+		"P" : 0,
+		"=" : 0,
+		"X" : 0
+	}
+	
+	for sqname in sequenceRefName:
+		for i in range(len(binary_flags)):  # Boucle qui parcours de 0 à la quantité de reads
+			if (rname[i] == sqname):        # verifier si le read est mappé sur la sequence de reference
+				if(re.search(r"(\*)", cigars[i])):
+					continue
+				else:
+					M = re.search(r"(\d*)M", cigars[i])
+					if M:
+						cigar_dico["M"] += int(M.group(1))
+						longueur_constaté += int(M.group(1))
+					
+					I = re.search(r"(\d*)I", cigars[i])
+					if I:
+						cigar_dico["I"] += int(I.group(1))
+						longueur_constaté += int(I.group(1))
+						
+					D = re.search(r"(\d*)D", cigars[i])
+					if D:
+						cigar_dico["D"] += int(D.group(1))
+						
+					N = re.search(r"(\d*)N", cigars[i])
+					if N:
+						cigar_dico["N"] += int(N.group(1))
+						
+					S = re.search(r"(\d*)S", cigars[i])
+					if S:
+						cigar_dico["S"] += int(S.group(1))
+						longueur_constaté += int(S.group(1))
+						
+					H = re.search(r"(\d*)H", cigars[i])
+					if H:
+						cigar_dico["H"] += int(H.group(1))
+					
+					P = re.search(r"(\d*)P", cigars[i])
+					if P:
+						cigar_dico["P"] += int(P.group(1))
+						
+					E = re.search(r"(\d*)=", cigars[i])
+					if E:
+						cigar_dico["="] += int(E.group(1))
+						longueur_constaté += int(E.group(1))
+
+					X = re.search(r"(\d*)X", cigars[i])
+					if X:
+						cigar_dico["X"] += int(X.group(1))
+						longueur_constaté += int(X.group(1))
+					
+						
+	
+	data1 = [(f"{cle} |", f"{val} |", f"{round(val/longueur_constaté, 5) * 100} |") for cle, val in cigar_dico.items()]  #
+	t_data1 = pd.DataFrame(data1, columns=[" Code |", " Valeur |", " 100% |"])
+	t_data = pd.concat([t_data1], axis=1)
+	print(t_data)
+	
 
 ######## Start ########
 if len(sys.argv) == 1:
 	print(
 		"Vous n'avez pas rentré d'argument, vous pouvez répondre au question suivante ou utilisez -h pour plus de détails ou automatiser le procéssus \n")
-
+	
 elif "-h" in sys.argv or "--help" in sys.argv:
 	print("Pour faire fonctionner ce script :")
-	print("Soit avec aucun argument : des questions étapes par étapes vous seront posé")
-	print("Soit avec un argument : le lien vers votre fichier .sam, l'analyse se lancera sans qualité minimal")
-	print(
-		"Soit avec deux arguments : le lien vers vore fichier .sam, et une valeur numérique de qualité minimal a respecté")
+	print("SamMapScript.py [file...]")
+	print("SamMapScript.py [file...] [Quality Min]")
+	print("SamMapScript.py [file...] [Quality Min] [Alignement]\n")
+	
+	print("Quality Min : Number between 0 - 255\n")
+	print("Alignement : \tPrendre seulement les séquences :")
+	print(" -ALL \t Tout prendre")
+	print(" -M \t Seulement les mappés")
+	print(" -SM \t Seulement les mappés et semimappé\n")
+	
 	sys.exit()
+
 
 #### Open file and take quality ####
 
 sam_file_path = findFile()
 QualityMin = askQuality()
 # J'appelle la fonction sam_reading qui prend en paramètre le chemin et qui me retourne les flags et les quals
-sequenceRefName, flags, rname, quals, coverage, cigars, totalNumberOfRead = sam_reading(sam_file_path)
+sequenceRefName, flags, rname, mapqs, cigars, totalNumberOfRead = sam_reading(sam_file_path)
 binary_flags = flags_to_binary(flags)  # Conversion des flags en binaire sur 12 bits
 
 #### Number of reads ####
 analysis_of_mapped_reads(binary_flags)
 count_flag_number()
+#pair_Analysis()
+quality_analysis()
+cigar_analysis()
 
 print("\n")
