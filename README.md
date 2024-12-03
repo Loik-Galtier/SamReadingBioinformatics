@@ -1,13 +1,20 @@
 # Sam Reading in Bioinformatics
-Les scripts suivants en était créer pour le projet Bioinformatique dans l'UE Système (HAI724I) du master Bioinformatique de l'université de Montpellier.
-Ils permettrant de répondre au questions suivants dans un fichier .sam de référence :
-Combien de reads sont mappés ? 
-Comment les reads (et paires de reads) sont-ils mappés ?  
-Où les reads sont-ils mappés ? L'alignement est-il homogène le long de la séquence de référence ? 
-Avec quelle qualité les reads sont-ils mappés ?
-Ils permettrant aussi de créer un rapport organisé.
+The following scripts were created for the Bioinformatics project in the Systems UE (HAI724I) of the Bioinformatics master's degree at the University of Montpellier.
+They answer the following questions in a reference .sam file:
+How many reads are mapped? 
+How are the reads (and pairs of reads) mapped?  
+Where are the reads mapped? Is the alignment uniform along the reference sequence? 
+What is the quality of the reads mapped?
 
-Pour faire fonctionné les scripts suivants, il est nécèssaire d'avoir les librairies : CSV, Sys, Os et re (incluse par défaut dans la bibliothèque python) et matplotlib
-Pour installer matplotlib, il est possible de passer par le terminal avec la commande "pip install matplotlib".
+# Installation
+To run the following scripts, you need the following libraries: CSV, Sys, Os and re (included by default in the python library).
 
-Une fois le script lancé, il fera les questions une par une.
+
+# Utilisation
+
+Use SamMapScript.py -h for more help
+
+you can launch the script without parameter, to go on a step by step tutorial
+Or you can put parameter to automate :
+SamMapScript.py [file...] [Quality Min] [Alignement need] [Specific operation only]
+
