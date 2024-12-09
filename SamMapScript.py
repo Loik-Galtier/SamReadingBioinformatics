@@ -74,18 +74,6 @@ def ask_quality():
 				return 0
 			else:
 				print("Valeur non correcte \n")
-				
-	elif len(sys.argv) >= 3 :
-		if sys.argv[2].isdigit():
-			print("Toute les prochaines opérations se feront sur les reads ayant un qualité supérieur à : " + sys.argv[
-				2] + "\n")
-			return int(sys.argv[2])
-		elif sys.argv[2].isalpha():
-			print("Erreur : Cela n'est pas une valeur correcte pour la qualité")
-			sys.exit()
-		else:
-			return 0
-	
 	else:
 		return 0
 
@@ -468,29 +456,48 @@ def cigar_analysis():
 
 
 ######## Start ########
+
+only_step = False
+
 if len(sys.argv) == 1:
 	print("Vous n'avez pas rentré d'argument, vous pouvez répondre au question suivante ou utilisez -h pour plus de détails ou automatiser le procéssus \n")
 
 opts, arg = getopt(sys.argv[1:], "h", ["help"])
-print(opts)
 for opt, arg in opts:
-	print(opt)
 	if opt in ("-h", "--help"):
 		show_help()
 
 #### Open file and take quality ####
 
 sam_file_path = find_file()
+
 QualityMin = ask_quality()
 # J'appelle la fonction sam_reading qui prend en paramètre le chemin et qui me retourne les flags et les quals
 sequenceRefName, flags, rname, mapqs, cigars, totalNumberOfRead = sam_reading(sam_file_path)
 binary_flags = flags_to_binary(flags)  # Conversion des flags en binaire sur 12 bits
-#getopt si -h afficher les aides
+
+for arg in enumerate(sys.argv[1:]):
+	if arg[1] == "map":
+		analysis_of_mapped_reads(binary_flags)
+		only_step = True
+	if arg[1] == "count_flag":
+		count_flag_number()
+		only_step = True
+	if arg[1] == "quality":
+		quality_analysis()
+		only_step = True
+	if arg[1] == "cigar":
+		cigar_analysis()
+		only_step = True
+	if arg[1].startswith("qual["): #changer pour liste d'action pour lancer la qual puis le find pui le read puis binary puis les actions contextuels ave l'affichage de l'entete en plus  b
+		ask_quality()
+		
 #### Number of reads ####
-analysis_of_mapped_reads(binary_flags)
-count_flag_number()
-#pair_Analysis()
-quality_analysis()
-cigar_analysis()
+if not only_step:
+	analysis_of_mapped_reads(binary_flags)
+	count_flag_number()
+	#pair_Analysis()
+	quality_analysis()
+	cigar_analysis()
 
 print("\n")
