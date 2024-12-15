@@ -16,17 +16,19 @@ You also need panda, install it with PyPI: **pip install pandas**
 Use SamMapScript.py -h for more help
 
 you can run the script without parameters, to follow a step-by-step tutorial
-Or you can give a parameter to the automaton:
+Or you can give a parameter to the automation:
 SamMapScript.py [file] [option...] will start the analysis of the file with the following options:
-    --[Options]--
-    quality[int] : sets the minimum read quality to be analyzed to 'int' (reads with quality < quality_min are ignored as if they never existed)
-    step_qual[int] : sets the step size for quality intervals to 'int'
-    specific_sequence[seq] : limits the analysis to the reference sequence 'seq'; to specify multiple sequences: specific_sequence[seq1,seq2] (watch out for spaces) (reads with another sequence are ignored as if they never existed) had never existed)
-    To run only specific steps:
-    statistic_map : Provides the amounts and percentages of mapped reads, semi-mapped reads (mapped but with a CIGAR containing letters other than "M"), and unmapped reads, based on the reference sequences
-    analyze_flag : Provides a human-readable analysis of the flags.
-    count_flag : Displays the number of flag bits across all sequences.
-    analyse_quality : Displays the distribution of quality scores in intervals with a default step size of 10 (or adjustable using step_qual[]).
-    analyze_cigar : Displays the number of CIGAR letters across all sequences combined.
+
+--[Options]--
+    **quality[int]** : sets the minimum read quality to be analyzed to 'int' (reads with quality < quality_min are ignored as if they never existed)
+    **step_qual[int]** : sets the step size for quality intervals to 'int'
+    **specific_sequence[seq]** : limits the analysis to the reference sequence 'seq'; to specify multiple sequences: specific_sequence[seq1,seq2] (watch out for spaces) (reads with another sequence are ignored as if they never existed) had never existed)
+
+To run only specific steps:
+    **statistic_map** : Provides the amounts and percentages of mapped reads, semi-mapped reads (mapped but with a CIGAR containing letters other than "M"), and unmapped reads, based on the reference sequences
+    **analyze_flag** : Provides a human-readable analysis of the flags.
+    **count_flag** : Displays the number of flag bits across all sequences.
+    **analyse_quality** : Displays the distribution of quality scores in intervals with a default step size of 10 (or adjustable using step_qual[]).
+    **analyze_cigar** : Displays the number of CIGAR letters across all sequences combined.
 
 example: /home/user/Downloads/SamMapScript.py /home/user/Downloads/mapping.sam quality[5] step_qual[15] specific_sequence[reference1,reference2] statistic_map count_flag
