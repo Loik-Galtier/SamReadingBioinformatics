@@ -13,18 +13,29 @@ It will present the results in table form !
 ## Installation
 To run the following scripts, you need python 3.12. Maybe you need PIP or conda to install library.
 You can use the following command to get the project :
-```git clone https://github.com/Loik-Galtier/SamReadingBioinformatics.git```
+```
+git clone https://github.com/Loik-Galtier/SamReadingBioinformatics.git
+```
+
 You need the following libraries: CSV, Sys, Os and re (included by default in the python library).
 You also need panda, install it with PyPI: 
-```pip install pandas```
+```
+pip install pandas
+```
 
 ## Usage
 
-```Use SamMapScript.py -h``` for more help
+for more help, use :
+```
+SamMapScript.py -h
+``` 
+
 
 you can run the script without parameters, to follow a step-by-step tutorial
 Or you can give a parameter to the automation:
-```SamMapScript.py [file] [option...]```
+```
+SamMapScript.py [file] [option...]
+```
 will start the analysis of the file with the following options:
 
 --[Options]--
@@ -40,7 +51,10 @@ To run only specific steps:
     **analyse_quality** : Displays the distribution of quality scores in intervals with a default step size of 10 (or adjustable using step_qual[]).
     **analyze_cigar** : Displays the number of CIGAR letters across all sequences combined.
 
-example: ```SamReadingBioinformatics/SamMapScript.py /home/user/Downloads/mapping.sam quality[5] step_qual[15] specific_sequence[reference1,reference2] statistic_map count_flag```
+example: 
+```
+SamReadingBioinformatics/SamMapScript.py /home/user/Downloads/mapping.sam quality[5] step_qual[15] specific_sequence[reference1,reference2] statistic_map count_flag
+```
 
 
 ## Validation
