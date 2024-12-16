@@ -11,6 +11,9 @@ And more !
 To run the following scripts, you need the following libraries: CSV, Sys, Os and re (included by default in the python library).
 You also need panda, install it with PyPI: **pip install pandas**
 
+# Validation
+You can run with the file test.sam in the github and compare your result with the **Result_testsam_SamMapScript_V1_0_0.txt**
+
 # Usage
 
 Use SamMapScript.py -h for more help
