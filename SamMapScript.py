@@ -43,7 +43,7 @@ def show_help():
 	print("analyse_quality\t Shows the distribution of quality scores in intervals with a default step size of 10 (or adjustable using step_qual[]).")
 	print("analyse_cigar\t Presents the counts of CIGAR letters across all sequences combined. \n")
 	
-	print("exemple : /home/user/Téléchargements/SamMapScript.py /home/user/Téléchargements/mapping.sam quality[5] step_qual[15] specific_sequence[reference1,reference2] statistic_map count_flag")
+	print("exemple : /home/user/Downloads/SamMapScript.py /home/user/Downloads/mapping.sam quality[5] step_qual[15] specific_sequence[reference1,reference2] statistic_map count_flag")
 	sys.exit()
 
 
@@ -53,11 +53,11 @@ def find_file():
 	if len(sys.argv) == 1:                                                  # If only the SamMapScript.py argument
 		no_file_found = True                                                # Set a boolean for the while after
 		while no_file_found:                                                #
-			name = input("What is the path to the SAM file : ?")            # Ask the path
-			if os.path.exists(name) and re.search(r".sam", name):    # If the path exist AND the .sam extension is here (frm the path in the input)
+			path = input("What is the path to the SAM file : ?")            # Ask the path
+			if os.path.exists(path) and re.search(r".sam", path):    # If the path exist AND the .sam extension is here (frm the path in the input)
 				no_file_found = False                                       # Quit the while
 				print("A SAM file has been found")                          # A little message
-				return name                                                 # Save the path to the file
+				return path                                                 # Save the path to the file
 			else:
 				print("No SAM file found, please try again \n")             # Ask again for a file.
 				
@@ -138,28 +138,36 @@ def sam_reading(sam_file_path):
 					idgroup = re.search(r"ID:([^\t|\n]+)", line)
 					if idgroup:
 						print("A reading group has been formed, its unique ID is: " + idgroup.group(1) + "\n")
+						save_file.write("A reading group has been formed, its unique ID is: " + idgroup.group(1) + "\n")
 		sam_file.seek(0)                                                    # For stopping the loop
 		
 		print("_________________ \n Header :\n")
+		save_file.write("_________________ \n Header :\n")
 		
 		if hd_table:
 			print("The data in this file is :")
+			save_file.write("The data in this file is :\n")
 			data = [(f"{cle} |", f"{val} |") for cle, val in hd_table.items()]
 			t_data = pd.DataFrame(data, columns=["Format Version |", "Order |"])
 			print(t_data, "\n")
-		
+			save_file.write(f"{t_data.to_string(index=False)} \n\n")
+			
 		if sq_table:
 			print("Reference sequences were found :")
+			save_file.write("Reference sequences were found : \n")
 			data = [(f"{cle} |", f"{val} |") for cle, val in sq_table.items()]
 			t_data = pd.DataFrame(data, columns=["sequence name |", "Length |"])
 			print(t_data, "\n")
+			save_file.write(f"{t_data.to_string(index=False)} \n\n")
+			
 		
 		if pg_table:
 			print("Programs were used in it :")
-			
+			save_file.write("Programs were used in it :\n")
 			data = [(f"{cle} |", f"{val} |") for cle, val in pg_table.items()]
 			t_data = pd.DataFrame(data, columns=["Programme id |", "Version |"])
 			print(t_data, "\n")
+			save_file.write(f"{t_data.to_string(index=False)} \n\n")
 			
 		sam_reader = csv.reader(sam_file, delimiter='\t')           # Reads the SAM file, splitting each line by tabs
 		for row in sam_reader:                                      # Iterates over each row in the SAM file
@@ -167,19 +175,20 @@ def sam_reading(sam_file_path):
 				continue
 			if quality_min <= int(row[4]) < 255:                    # Filters alignments based on a minimum quality and excludes more than 254
 				if (len(specific_sequence) > 0 and row[2] in specific_sequence) or len(specific_sequence) == 0:  # Checks if the aligned sequence is a specific sequence or if no specific is provided
-					flag = int(row[1])                              # Extracts the FLAG value from the alignment
-					flags.append(flag)
-					
-					rname = row[2]                                  # Extracts the reference sequence name
-					rnames.append(rname)
-					
-					mapq = row[4]                                   # Extracts the mapping quality
-					mapqs.append(mapq)
-					
-					cigar = row[5]                                  # Extracts the CIGAR
-					cigars.append(cigar)
-					
-					number_of_read_total += 1                       # Increments the counter for the total number of alignments
+					if len(row) >= 5:                               # Check if all the part exist
+						flag = int(row[1])                          # Extracts the FLAG value from the alignment
+						flags.append(flag)
+						
+						rname = row[2]                              # Extracts the reference sequence name
+						rnames.append(rname)
+						
+						mapq = row[4]                               # Extracts the mapping quality
+						mapqs.append(mapq)
+						
+						cigar = row[5]                              # Extracts the CIGAR
+						cigars.append(cigar)
+						
+						number_of_read_total += 1                   # Increments the counter for the total number of alignments
 		if len(specific_sequence) > 0:                              # If a specific sequences:
 			return specific_sequence, flags, rnames, mapqs, cigars, number_of_read_total
 		else:
@@ -225,7 +234,9 @@ def statistic_of_mapped_reads(binary_flag):
 			nb_unmapped += 1                                        # Add 1 for the number of unmapped
 	
 	print(f"_________________ \n Alignment Statistic: With minimum quality of : {quality_min}\n")
+	save_file.write(f"_________________ \n Alignment Statistic: With minimum quality of : {quality_min}\n\n")
 	print(f"Amongs {totalNumberOfRead} reads :")
+	save_file.write(f"Amongs {totalNumberOfRead} reads : \n")
 	
 	if totalNumberOfRead != 0:                                      # If the total is not 0 for the division ( and the analyse is not empty)
 		data1 = [(f"{cle} |", f"{val} |", f" {round(val / totalNumberOfRead, 4) * 100} |", f" mapped |") for cle, val in nb_mapped_table.items()]  #
@@ -244,6 +255,7 @@ def statistic_of_mapped_reads(binary_flag):
 			elif nb_mapped_table:
 				t_data = pd.concat([t_data1, t_data3], axis=0)
 		print(t_data.to_string(index=False), "\n")
+		save_file.write(f"{t_data.to_string(index=False)} \n\n")
 
 def dico_count_flag():
 	
@@ -265,36 +277,41 @@ def dico_count_flag():
 	
 def analysis_flag():
 	print(f"_________________ \nFlag analysis: with minimum quality {quality_min} and on reference sequences: {specific_sequence}\n")
+	save_file.write(f"_________________ \nFlag analysis: with minimum quality {quality_min} and on reference sequences: {specific_sequence}\n\n")
 	for i in range(len(flags_counts)):
 		if i == 0:
 			print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) of the reads are paired and so {100 - round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}% are independent. \n")
+			save_file.write(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) of the reads are paired and so {100 - round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}% are independent. \n\n")
 		if i == 2:
 			if flags_counts[str(2 ** i) + " bits"] == flags_counts[str(2 ** (i+1)) + " bits"]:
 				print(f"{flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) reads and their associated reads are not sequence aligned. \n")
+				save_file.write(f"{flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) reads and their associated reads are not sequence aligned. \n\n")
 			else:
 				print(f"Some reads are aligned but not their complement. \n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) unaligned reads and {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (1+i)) + ' bits'] / totalNumberOfRead * 100, 2)}%) associated unaligned reads.\n")
+				save_file.write(f"Some reads are aligned but not their complement.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) unaligned reads and {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (1+i)) + ' bits'] / totalNumberOfRead * 100, 2)}%) associated unaligned reads.\n\n")
 		
 		if i == 4:
 			if flags_counts[str(2 ** i) + " bits"] == flags_counts[str(2 ** (i+1)) + " bits"]:
-				print("All reads and their associates are in the same orientation.")
-				print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n")
+				print(f"All reads and their associates are in the same orientation.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n")
+				save_file.write(f"All reads and their associates are in the same orientation.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n\n")
 			else:
-				print("There are more reads in one direction than the other!")
-				print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the reverse complementary direction but {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the non-reverse direction.\n")
+				print(f"There are more reads in one direction than the other!\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the reverse complementary direction but {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the non-reverse direction.\n")
+				save_file.write(f"There are more reads in one direction than the other!\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the reverse complementary direction but {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the non-reverse direction.\n\n")
+				
 		if i == 6:
 			if flags_counts[str(2 ** i) + " bits"] == flags_counts[str(2 ** (i + 1)) + " bits"]:
-				print("All reads are in pairs.")
-				print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in the first segment and as many as in the second.\n")
+				print(f"All reads are in pairs.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in the first segment and as many as in the second.\n")
+				save_file.write(f"All reads are in pairs.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in the first segment and as many as in the second.\n\n")
+			
 			else:
-				print("There is a problem in the file with the parameters entered.")
-				print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in first segment and {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] /totalNumberOfRead * 100, 2)}%) in seconds.\n")
-
+				print(f"There is a problem in the file with the parameters entered.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in first segment and {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] /totalNumberOfRead * 100, 2)}%) in seconds.\n")
+				save_file.write(f"There is a problem in the file with the parameters entered.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 1)}%) in first segment and {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] /totalNumberOfRead * 100, 2)}%) in seconds.\n\n")
 
 ####### Bonus : It happens that if parameter "detail flag" is called, some value is hard-coded here, but this def is not included in the use of the initial project ########
 def count_flag_number():
 
 	print(f"_________________ \nQuantity of flags: with minimum quality of: {quality_min}\n")
-	
+	save_file.write(f"_________________ \nQuantity of flags: with minimum quality of: {quality_min}\n\n")
 	pd.set_option('display.max_colwidth', 40)
 	
 	if totalNumberOfRead != 0:
@@ -304,10 +321,12 @@ def count_flag_number():
 		t_data = pd.concat([t_data1], axis=1)
 		
 		print(t_data.to_string(index=False))
+		save_file.write(f"{t_data.to_string(index=False)} \n\n")
 		
 #### ####
 def quality_analysis():
-	
+	print(f"\n_________________ \nQuality distribution for sequence: {specific_sequence}, with a minimum quality of {quality_min}, and in steps of {quality_step}\n")
+	save_file.write(f"\n_________________ \nQuality distribution for sequence: {specific_sequence}, with a minimum quality of {quality_min}, and in steps of {quality_step}\n\n")
 	qual_dico_sequence={}
 	
 	for sqname in specific_sequence:
@@ -337,8 +356,6 @@ def quality_analysis():
 		qual_dico_sequence[sqname] = qual_dico      # Stock
 		
 
-		print(f"\n_________________ \nQuality distribution for sequence: {sqname}, with a minimum quality of {quality_min}, and in steps of {quality_step}\n")
-		
 		data1 = [(f" |", f" |", f" |", f"  |")]  # remplacer par %
 		t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |", " Quality |", " Quantity |", " % |"])
 		t_data = pd.concat([t_data1], axis=1)
@@ -349,12 +366,13 @@ def quality_analysis():
 				t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |"," Quality |", " Quantity |", " % |"])
 				t_data = pd.concat([t_data1], axis=0)
 		print(t_data)
+		save_file.write(f"{t_data.to_string(index=False)} \n\n")
 		
 #### Bonus #####
 def cigar_analysis():
 
 	print("\n_________________ \n Quantité des cigars :\n")
-	
+	save_file.write("\n_________________ \n Quantité des cigars :\n")
 	longueur_theorique = 0
 	longueur_constate = 0
 	
@@ -386,6 +404,8 @@ def cigar_analysis():
 		t_data1 = pd.DataFrame(data1, columns=[" Code |", " Valeur |", " % |"])
 		t_data = pd.concat([t_data1], axis=1)
 		print(t_data)
+		save_file.write(t_data.to_string(index=False))
+		save_file.write("\n")
 	
 ####### Start ########
 
@@ -409,25 +429,40 @@ size_flag = 12                                                  # Minimal size f
 
 flags_counts = {}                                               # Count of every bits in flag found on the selection
 
+nb_of_save = 0
 
+while True:
+	name_save_file = f"Result_n{str(nb_of_save)}_SamMapScript_V1_0_0.txt"
+	if not os.path.exists(name_save_file):
+		break
+	nb_of_save += 1
+
+save_file = open(name_save_file, 'a')                           # Open to append
+save_file.write(str(sys.argv))
+save_file.write(f"\n\n")
 
 for arg in enumerate(sys.argv[1:]):                             # Check every argument except the first (SamMapScript.py)
 	if arg[1].startswith("quality["):                           # if the argument start by "quality[" :
 		qual = re.search(r"quality\[(\d+)\]",arg[1])     # Search with the pattern quality\[(\d+)\], to have a group 1 of one or more digit
 		quality_min = int(qual.group(1))                        # Put this digit in quality_min
 		print(f"The minimum quality will be {quality_min}")     # A little message
+		save_file.write(f"The minimum quality will be {quality_min} \n")
 		quality_set = True                                      # set the quality_set bool to true to not change the minimum quality after
+		
+	
 	
 	if arg[1].startswith("step_qual["):                         # if the argument start by "step_qual[" :
 		qualstep = re.search(r"step_qual\[(\d+)\]",arg[1]) # Search with the pattern step_qual\[(\d+)\], to have a group 1 of one or more digit
 		quality_step = int(qualstep.group(1))                   # Put this digit in quality_step
 		print(f"The analysis of the distribution of qualities will be done in steps of {quality_step}") # A little message
+		save_file.write(f"The analysis of the distribution of qualities will be done in steps of {quality_step}\n")
 	
 	if arg[1].startswith("specific_sequence["):                 # If the argument start by "specific_sequence[" :
 		seq = re.search(r"specific_sequence\[(.+)\]",arg[1])    # Search with the pattern specific_sequence\[(.+)\], to have a group 1 of one or more caractére
 		if seq:                                                 # If seq is not null
 			specific_sequence = seq.group(1).split(',')         # Create a list with every word separate by a comma
 			print(f"Only reads aligned to the sequence: {specific_sequence} will be used.") #A little message
+			save_file.write(f"Only reads aligned to the sequence: {specific_sequence} will be used.\n")
 
 if not quality_set:                                             # If quality set is equal at False
 	ask_quality()                                               # Ask if we want a quality limiter (if only one argument)
@@ -436,6 +471,15 @@ specific_sequence, flags, rname, mapqs, cigars, totalNumberOfRead = sam_reading(
 binary_flags = flags_to_binary(flags)                                                               # Convert flags to 12-bit binary
 
 for arg in enumerate(sys.argv[1:]):                             # Check every argument except the first (SamMapScript.py) # Second time because we need the precedent variable
+	if arg[1] == "all":
+		only_step = True
+		flags_counts = dico_count_flag()                            # Launch the function "dico_count_flag" who set the dictionary "flags_counts" for the next action
+		statistic_of_mapped_reads(binary_flags)                     # Launch the function "statistic_of_mapped_reads" who take the flags in binary to show the distribution of mapped (or not) reads amongs the sequence
+		analysis_flag()                                             # Launch the function "analysis_flag" who present the bits on a human language
+		count_flag_number()                                         # Launch the function "count_flag_number" who show in détail the number of every bit
+		quality_analysis()                                          # Launch the function "quality_analysis" who show the distribution of quality
+		cigar_analysis()                                            # Launch the function "cigar_analysis" who present every number of letter in CIGAR
+	
 	if arg[1] == "statistic_map":                               # If the argument start by "statistic_map" :
 		statistic_of_mapped_reads(binary_flags)                 # Launch the function "statistic_of_mapped_reads" who take the flags in binary to show the distribution of mapped (or not) reads amongs the sequence
 		only_step = True                                        # Set the only_step bool to true to not launch other actions that specified
