@@ -1,4 +1,4 @@
-['/home/loki_drams/git/SamReadingBioinformatics/SamMapScript.py', '/home/loki_drams/git/SamReadingBioinformatics/test.sam']
+['/home/loki_drams/git/SamReadingBioinformatics/SamMapScript.py', '/home/loki_drams/git/SamReadingBioinformatics/test.sam', 'all']
 
 _________________ 
  Header :
@@ -36,6 +36,23 @@ All reads and their associates are in the same orientation.
 There is a problem in the file with the parameters entered.
  There are 598 (50.0%) in first segment and 596 (49.87%) in seconds.
 
+_________________ 
+Quantity of flags: with minimum quality of: 0
+
+     Bits | Quantity |      % |
+   1 bits |     1195 |  100.0 |
+   2 bits |     1194 |  99.92 |
+   4 bits |        0 |    0.0 |
+   8 bits |        0 |    0.0 |
+  16 bits |      597 |  49.96 |
+  32 bits |      597 |  49.96 |
+  64 bits |      598 |  50.04 |
+ 128 bits |      596 |  49.87 |
+ 256 bits |        0 |    0.0 |
+ 512 bits |        0 |    0.0 |
+1024 bits |        0 |    0.0 |
+2048 bits |        0 |    0.0 | 
+
 
 _________________ 
 Quality distribution for sequence: ['Reference', 'TEST', 'bob'], with a minimum quality of 0, and in steps of 10
@@ -68,3 +85,11 @@ Sequence reference |            Quality | Quantity |       % |
                bob | 40 < quality <= 50 |        0 |     0.0 |
                bob | 50 < quality <= 60 |        2 |  0.1674 | 
 
+
+_________________ 
+ Quantité des cigars :
+Code | Valeur |      % |
+   M | 119118 | 99.992 |
+   Z |      4 |  0.003 |
+   A |      3 |  0.003 |
+   X |      3 |  0.003 |

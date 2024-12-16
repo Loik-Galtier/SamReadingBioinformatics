@@ -37,6 +37,7 @@ def show_help():
 	print("specific_sequence[seq] \t restricts the analysis to the reference sequence 'seq'; to specify multiple sequences: specific_sequence[seq1,seq2] (be careful with spaces)\t(reads with other sequence are ignored as if they never existed) \n")
 	
 	print("To run specific steps only:")
+	print("all\t Every possible action.")
 	print("statistic_map\t Provides the quantities and percentages of mapped reads, semi-mapped reads (mapped but with a CIGAR containing other letters than 'M'), and unmapped reads, according to the reference sequences")
 	print("analyse_flag\t Provides a human readable analysis of the flags.")
 	print("count_flag\t\t Displays the counts of flag bits across all sequences.")
