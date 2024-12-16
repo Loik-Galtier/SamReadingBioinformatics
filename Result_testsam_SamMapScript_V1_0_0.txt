@@ -1,0 +1,70 @@
+['/home/loki_drams/git/SamReadingBioinformatics/SamMapScript.py', '/home/loki_drams/git/SamReadingBioinformatics/test.sam']
+
+_________________ 
+ Header :
+Reference sequences were found : 
+sequence name |  Length |
+    Reference | 1000000 |
+         TEST |   10000 |
+          bob |   10000 | 
+
+Programs were used in it :
+Programme id |     Version |
+         bwa | 0.7.9a-r786 | 
+
+_________________ 
+ Alignment Statistic: With minimum quality of : 0
+
+Amongs 1195 reads : 
+ Sequence reference | Quantity |                    % |      mapped ?|
+          Reference |     1186 |                99.25 |       mapped |
+               TEST |        3 |                 0.25 |       mapped |
+                bob |        2 |  0.16999999999999998 |       mapped |
+          Reference |        2 |  0.16999999999999998 |  Semi-mapped |
+         Non aligné |        1 |                 0.08 |   not mapped | 
+
+_________________ 
+Flag analysis: with minimum quality 0 and on reference sequences: ['Reference', 'TEST', 'bob']
+
+There are 1195 (100.0%) of the reads are paired and so 0.0% are independent. 
+
+0 (0.0%) reads and their associated reads are not sequence aligned. 
+
+All reads and their associates are in the same orientation.
+ There are 597 (49.96%) in the complementary reverse direction and as many in the non-reverse direction.
+
+There is a problem in the file with the parameters entered.
+ There are 598 (50.0%) in first segment and 596 (49.87%) in seconds.
+
+
+_________________ 
+Quality distribution for sequence: ['Reference', 'TEST', 'bob'], with a minimum quality of 0, and in steps of 10
+
+Sequence reference |            Quality | Quantity |        % |
+         Reference |       0 <= quality |      108 |   9.0377 |
+         Reference |  0 < quality <= 10 |        1 |   0.0837 |
+         Reference | 10 < quality <= 20 |        0 |      0.0 |
+         Reference | 20 < quality <= 30 |       10 |   0.8368 |
+         Reference | 30 < quality <= 40 |        9 |   0.7531 |
+         Reference | 40 < quality <= 50 |       20 |   1.6736 |
+         Reference | 50 < quality <= 60 |     1040 |  87.0293 |
+         Reference | 60 < quality <= 70 |        1 |   0.0837 | 
+
+Sequence reference |            Quality | Quantity |       % |
+              TEST |       0 <= quality |        0 |     0.0 |
+              TEST |  0 < quality <= 10 |        0 |     0.0 |
+              TEST | 10 < quality <= 20 |        0 |     0.0 |
+              TEST | 20 < quality <= 30 |        2 |  0.1674 |
+              TEST | 30 < quality <= 40 |        0 |     0.0 |
+              TEST | 40 < quality <= 50 |        0 |     0.0 |
+              TEST | 50 < quality <= 60 |        1 |  0.0837 | 
+
+Sequence reference |            Quality | Quantity |       % |
+               bob |       0 <= quality |        0 |     0.0 |
+               bob |  0 < quality <= 10 |        0 |     0.0 |
+               bob | 10 < quality <= 20 |        0 |     0.0 |
+               bob | 20 < quality <= 30 |        0 |     0.0 |
+               bob | 30 < quality <= 40 |        0 |     0.0 |
+               bob | 40 < quality <= 50 |        0 |     0.0 |
+               bob | 50 < quality <= 60 |        2 |  0.1674 | 
+

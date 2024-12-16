@@ -1,0 +1,72 @@
+['/home/loki_drams/git/SamReadingBioinformatics/SamMapScript.py', '/home/loki_drams/Téléchargements/724/mapping.sam', 'all']
+
+_________________ 
+ Header :
+Reference sequences were found : 
+sequence name |  Length |
+    Reference | 1000000 | 
+
+Programs were used in it :
+Programme id |     Version |
+         bwa | 0.7.9a-r786 | 
+
+_________________ 
+ Alignment Statistic: With minimum quality of : 0
+
+Amongs 351330 reads : 
+ Sequence reference | Quantity |      % |      mapped ?|
+          Reference |   349891 |  99.59 |       mapped |
+          Reference |      107 |   0.03 |  Semi-mapped |
+         Non aligné |     1315 |   0.37 |   not mapped | 
+
+_________________ 
+Flag analysis: with minimum quality 0 and on reference sequences: ['Reference']
+
+There are 351330 (100.0%) of the reads are paired and so 0.0% are independent. 
+
+1315 (0.37%) reads and their associated reads are not sequence aligned. 
+
+All reads and their associates are in the same orientation.
+ There are 175008 (49.81%) in the complementary reverse direction and as many in the non-reverse direction.
+
+All reads are in pairs.
+ There are 175665 (50.0%) in the first segment and as many as in the second.
+
+_________________ 
+Quantity of flags: with minimum quality of: 0
+
+     Bits | Quantity |      % |
+   1 bits |   351330 |  100.0 |
+   2 bits |   349998 |  99.62 |
+   4 bits |     1315 |   0.37 |
+   8 bits |     1315 |   0.37 |
+  16 bits |   175008 |  49.81 |
+  32 bits |   175008 |  49.81 |
+  64 bits |   175665 |   50.0 |
+ 128 bits |   175665 |   50.0 |
+ 256 bits |        0 |    0.0 |
+ 512 bits |        0 |    0.0 |
+1024 bits |        0 |    0.0 |
+2048 bits |        0 |    0.0 | 
+
+
+_________________ 
+Quality distribution for sequence: ['Reference'], with a minimum quality of 0, and in steps of 10
+
+Sequence reference |            Quality | Quantity |        % |
+         Reference |       0 <= quality |    33500 |   9.5352 |
+         Reference |  0 < quality <= 10 |      269 |   0.0766 |
+         Reference | 10 < quality <= 20 |      232 |    0.066 |
+         Reference | 20 < quality <= 30 |     5685 |   1.6181 |
+         Reference | 30 < quality <= 40 |     3334 |    0.949 |
+         Reference | 40 < quality <= 50 |     4745 |   1.3506 |
+         Reference | 50 < quality <= 60 |   302265 |  86.0345 | 
+
+
+_________________ 
+ Quantité des cigars :
+Code |   Valeur |      % |
+   M | 35000611 | 99.995 |
+   D |       61 |    0.0 |
+   I |       18 |    0.0 |
+   S |     1621 |  0.005 |
