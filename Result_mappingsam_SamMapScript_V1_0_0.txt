@@ -17,12 +17,14 @@ Amongs 351330 reads :
  Sequence reference | Quantity |      % |      mapped ?|
           Reference |   349891 |  99.59 |       mapped |
           Reference |      107 |   0.03 |  Semi-mapped |
-         Non aligné |     1315 |   0.37 |   not mapped | 
+         Non aligné |     1332 |   0.38 |   not mapped | 
 
 _________________ 
 Flag analysis: with minimum quality 0 and on reference sequences: ['Reference']
 
 There are 351330 (100.0%) of the reads are paired and so 0.0% are independent. 
+
+There are 349998 (99.62%) segment who are properly aligned by the aligner. 
 
 1315 (0.37%) reads and their associated reads are not sequence aligned. 
 
@@ -64,7 +66,7 @@ Sequence reference |            Quality | Quantity |        % |
 
 
 _________________ 
- Quantité des cigars :
+ Quantity of cigars :
 Code |   Valeur |      % |
    M | 35000611 | 99.995 |
    D |       61 |    0.0 |

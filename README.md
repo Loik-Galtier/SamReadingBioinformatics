@@ -1,5 +1,5 @@
 # Sam Reading in Bioinformatics
-The following scripts were created for the Bioinformatics project of the EU Systems (HAI724I) of the Bioinformatics master of the University of Montpellier.
+The following script were created for the Bioinformatics project of the EU Systems (HAI724I) of the Bioinformatics master of the University of Montpellier.
 They answer the following questions in a reference .sam file:
 How many reads are mapped?
 How are the reads (and pairs of reads) mapped?
@@ -25,6 +25,7 @@ SamMapScript.py [file] [option...] will start the analysis of the file with the 
     **specific_sequence[seq]** : limits the analysis to the reference sequence 'seq'; to specify multiple sequences: specific_sequence[seq1,seq2] (watch out for spaces) (reads with another sequence are ignored as if they never existed) had never existed)
 
 To run only specific steps:
+    **all** : all the next action.
     **statistic_map** : Provides the amounts and percentages of mapped reads, semi-mapped reads (mapped but with a CIGAR containing letters other than "M"), and unmapped reads, based on the reference sequences
     **analyze_flag** : Provides a human-readable analysis of the flags.
     **count_flag** : Displays the number of flag bits across all sequences.

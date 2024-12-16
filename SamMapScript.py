@@ -55,7 +55,7 @@ def find_file():
 		no_file_found = True                                                # Set a boolean for the while after
 		while no_file_found:                                                #
 			path = input("What is the path to the SAM file : ?")            # Ask the path
-			if os.path.exists(path) and re.search(r".sam", path):    # If the path exist AND the .sam extension is here (frm the path in the input)
+			if os.path.exists(path) and re.search(r".sam", path) and os.path.getsize(path) > 0:    # If the path exist AND the .sam extension is here (frm the path in the input) AND is not empty by the size
 				no_file_found = False                                       # Quit the while
 				print("A SAM file has been found")                          # A little message
 				return path                                                 # Save the path to the file
@@ -63,7 +63,7 @@ def find_file():
 				print("No SAM file found, please try again \n")             # Ask again for a file.
 				
 	else:                                                                   # Else if more argument
-		if os.path.exists(sys.argv[1]) and re.search(r".sam", sys.argv[1]):  # if the path exist AND the .sam extension is here (from the path pu in argument)
+		if os.path.exists(sys.argv[1]) and re.search(r".sam", sys.argv[1]) and os.path.getsize(sys.argv[1]) > 0:  # if the path exist AND the .sam extension is here (from the path pu in argument)
 			print("A SAM file has been found")                              # A little message
 			return sys.argv[1]                                              # Save the path to the file
 		else:
@@ -140,6 +140,10 @@ def sam_reading(sam_file_path):
 					if idgroup:
 						print("A reading group has been formed, its unique ID is: " + idgroup.group(1) + "\n")
 						save_file.write("A reading group has been formed, its unique ID is: " + idgroup.group(1) + "\n")
+				elif line.startswith("@CO"):
+						print("A comment : " + line + "\n")
+						save_file.write("A reading group has been formed, its unique ID is: " +  line + "\n")
+					
 		sam_file.seek(0)                                                    # For stopping the loop
 		
 		print("_________________ \n Header :\n")
@@ -225,15 +229,12 @@ def statistic_of_mapped_reads(binary_flag):
 							nb_mapped_table[sqname] += 1            # Add 1 to count the number of reads with sqname key in nb_mapped_table
 						else:                                       # Otherwise initialize it
 							nb_mapped_table[sqname] = 1
-						
+				else :
+					nb_unmapped += 1                                # Add 1 for the number of unmapped
+			elif flag[-3] == "1" or rname[i] == "*" or rname[i] not in specific_sequence:  # bit 3 codes for "read unmapped" info. If "1" = unmapped. If rname[i] is "*" or not in reference, the read is not mapped
+				nb_unmapped += 1                                    # Add 1 for the number of unmapped
+	
 
-	
-	# unmapped part
-	for i in range(len(binary_flag)):                               # Loop that iterates from 0 to the amount of reads
-		flag = binary_flag[i]                                       # Put a binary flag in the flag variable
-		if flag[-3] == "1" or rname[i] == "*" or rname[i] not in specific_sequence:  # bit 3 codes for "read unmapped" info. If "1" = unmapped. If rname[i] is "*" or not in reference, the read is not mapped
-			nb_unmapped += 1                                        # Add 1 for the number of unmapped
-	
 	print(f"_________________ \n Alignment Statistic: With minimum quality of : {quality_min}\n")
 	save_file.write(f"_________________ \n Alignment Statistic: With minimum quality of : {quality_min}\n\n")
 	print(f"Amongs {totalNumberOfRead} reads :")
@@ -283,6 +284,10 @@ def analysis_flag():
 		if i == 0:
 			print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) of the reads are paired and so {100 - round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}% are independent. \n")
 			save_file.write(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) of the reads are paired and so {100 - round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}% are independent. \n\n")
+		if i == 1:
+			print(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) segment who are properly aligned by the aligner. \n")
+			save_file.write(f"There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) segment who are properly aligned by the aligner. \n\n")
+		
 		if i == 2:
 			if flags_counts[str(2 ** i) + " bits"] == flags_counts[str(2 ** (i+1)) + " bits"]:
 				print(f"{flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) reads and their associated reads are not sequence aligned. \n")
@@ -357,25 +362,26 @@ def quality_analysis():
 		qual_dico_sequence[sqname] = qual_dico      # Stock
 		
 
-		data1 = [(f" |", f" |", f" |", f"  |")]  # remplacer par %
+		data1 = [(f" |", f" |", f" |", f"  |")]  #
 		t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |", " Quality |", " Quantity |", " % |"])
 		t_data = pd.concat([t_data1], axis=1)
 		
 		for upKey, upValue in qual_dico_sequence.items():
 			if totalNumberOfRead != 0:
-				data1 = [(f"{upKey} |", f"{key} |", f"{val} |", f" {round(val / totalNumberOfRead * 100, 4)} |") for key, val in upValue.items()] #remplacer par %
+				data1 = [(f"{upKey} |", f"{key} |", f"{val} |", f" {round(val / totalNumberOfRead * 100, 4)} |") for key, val in upValue.items()] #
 				t_data1 = pd.DataFrame(data1, columns=[" Sequence reference |"," Quality |", " Quantity |", " % |"])
 				t_data = pd.concat([t_data1], axis=0)
-		print(t_data)
+		print(t_data.to_string(index=False))
 		save_file.write(f"{t_data.to_string(index=False)} \n\n")
 		
 #### Bonus #####
 def cigar_analysis():
 
-	print("\n_________________ \n Quantité des cigars :\n")
-	save_file.write("\n_________________ \n Quantité des cigars :\n")
-	longueur_theorique = 0
-	longueur_constate = 0
+	print("\n_________________ \n Quantity of cigars :\n")
+	save_file.write("\n_________________ \n Quantity of cigars :\n")
+	lenght_of_letter = 0
+	consumes_query = 0
+	consumes_ref = 0
 	
 	
 	cigar_dico = {}
@@ -398,13 +404,21 @@ def cigar_analysis():
 							cigar_dico[letter] += number  # Add number found earlier to count the number of read
 						else:
 							cigar_dico[letter] = number
-						longueur_theorique += number
+							
+						if letter in ("M","I","S","=","X"):
+							consumes_query += number
+						if letter in ("M", "D", "N","=", "X"):
+							consumes_ref += number
 						
-	if longueur_theorique != 0:
-		data1 = [(f"{cle} |", f"{val} |", f"{round(val / longueur_theorique, 5) * 100} |") for cle, val in cigar_dico.items()]  #
+						lenght_of_letter += number
+						
+	if lenght_of_letter != 0:
+		data1 = [(f"{cle} |", f"{val} |", f"{round(val / lenght_of_letter, 5) * 100} |") for cle, val in cigar_dico.items()]  #
 		t_data1 = pd.DataFrame(data1, columns=[" Code |", " Valeur |", " % |"])
 		t_data = pd.concat([t_data1], axis=1)
 		print(t_data)
+		print("consumes_query : ", consumes_query)
+		print("consumes_ref : ", consumes_ref)
 		save_file.write(t_data.to_string(index=False))
 		save_file.write("\n")
 	
@@ -433,7 +447,7 @@ flags_counts = {}                                               # Count of every
 nb_of_save = 0
 
 while True:
-	name_save_file = f"Result_n{str(nb_of_save)}_SamMapScript_V1_0_0.txt"
+	name_save_file = f"Result_N{str(nb_of_save)}_SamMapScript_V1_0_0.txt"
 	if not os.path.exists(name_save_file):
 		break
 	nb_of_save += 1
