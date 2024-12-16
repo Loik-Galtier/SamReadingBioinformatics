@@ -301,7 +301,7 @@ def analysis_flag():
 		
 		if i == 4:
 			if flags_counts[str(2 ** i) + " bits"] == flags_counts[str(2 ** (i+1)) + " bits"]:
-				print(f"All reads and their associates are in the same orientation.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n")
+				print(f"All reads and their associates are inverse complementary.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n")
 				save_file.write(f"All reads and their associates are in the same orientation.\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the complementary reverse direction and as many in the non-reverse direction.\n\n")
 			else:
 				print(f"There are more reads in one direction than the other!\n There are {flags_counts[str(2 ** i) + ' bits']} ({round(flags_counts[str(2 ** i) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the reverse complementary direction but {flags_counts[str(2 ** (1+i)) + ' bits']} ({round(flags_counts[str(2 ** (i+1)) + ' bits'] / totalNumberOfRead * 100, 2)}%) in the non-reverse direction.\n")
