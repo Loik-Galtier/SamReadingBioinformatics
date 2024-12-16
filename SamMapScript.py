@@ -216,8 +216,9 @@ def statistic_of_mapped_reads(binary_flag):
 	# mapped and semi-mapped part
 	for sqname in specific_sequence:
 		for i in range(len(binary_flag)):                           # Loop that iterates from 0 to the amount of reads
-			if rname[i] == sqname:                                  # check if read is mapped to reference sequence
-				flag = binary_flag[i]                               # Put a binary flag in the flag variable
+		# check if read is mapped to reference sequence
+			flag = binary_flag[i]
+			if rname[i] == sqname:                                  # Put a binary flag in the flag variable
 				if flag[-2] == "1" and flag[-3] == "0":             # Bit 2 code for "aligned" info. If "1" = aligned. Bit 3 code for "unmapped"
 					if not re.fullmatch(r"(\d*M+)+", cigars[i]):  # If there are not only M, then there is an alignment problem.
 						if sqname in nb_semi_mapped_table:          # If sqname exists in the semi-mapped table
@@ -231,6 +232,8 @@ def statistic_of_mapped_reads(binary_flag):
 							nb_mapped_table[sqname] = 1
 				else :
 					nb_unmapped += 1                                # Add 1 for the number of unmapped
+			
+			
 			elif flag[-3] == "1" or rname[i] == "*" or rname[i] not in specific_sequence:  # bit 3 codes for "read unmapped" info. If "1" = unmapped. If rname[i] is "*" or not in reference, the read is not mapped
 				nb_unmapped += 1                                    # Add 1 for the number of unmapped
 	
